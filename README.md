@@ -29,3 +29,7 @@ func main() {
     // Start the remainder of the application
 }
 ```
+
+## Further Examples
+
+To show working examples of working with otel go starter feel free to look at the [examples](./examples) folder on further ideas on how to get started.
