@@ -14,5 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - uses: actions/setup-go@v2
+    - name: download the required packages
+      run: go mod download
     - run: go test --cover --race -v ./...
       
