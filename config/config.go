@@ -28,21 +28,21 @@ type Pipeline struct {
 	Exporter       string
 	Endpoint       string
 	Headers        map[string]string
-	Propergators   []string
+	Propagators    []string
 }
 
 type OptionFunc func(*Config) error
 
 type PipeOption func(*Pipeline) error
 
-func NewDefault() Config {
-	return Config{
+func NewDefault() *Config {
+	return &Config{
 		Metrics: Pipeline{
 			Enable: false,
 		},
 		Tracing: Pipeline{
 			Enable: false,
-			Propergators: []string{
+			Propagators: []string{
 				"baggage",
 				"tracecontext",
 			},

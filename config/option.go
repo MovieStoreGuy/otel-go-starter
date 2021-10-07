@@ -2,7 +2,6 @@ package config
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -40,6 +39,9 @@ func WithOtelErrorHandler(handler otel.ErrorHandler) OptionFunc {
 func WithMetricsPipeline(pipeOpts ...PipeOption) OptionFunc {
 	return func(c *Config) (err error) {
 		for _, opt := range pipeOpts {
+			if opt == nil {
+				return fmt.Errorf("nil metric pipeline option provided: %w", ErrNilParamProvided)
+			}
 			err = multierr.Append(err, opt(&c.Metrics))
 		}
 		return err
@@ -49,6 +51,9 @@ func WithMetricsPipeline(pipeOpts ...PipeOption) OptionFunc {
 func WithTracesPipeline(pipeOpts ...PipeOption) OptionFunc {
 	return func(c *Config) (err error) {
 		for _, opt := range pipeOpts {
+			if opt == nil {
+				return fmt.Errorf("nil traces pipeline option provided: %w", ErrNilParamProvided)
+			}
 			err = multierr.Append(err, opt(&c.Tracing))
 		}
 		return err
@@ -69,6 +74,13 @@ func WithPipelineInsecureConnection() PipeOption {
 	}
 }
 
+func WithPipelineCompression() PipeOption {
+	return func(p *Pipeline) error {
+		p.UseCompression = true
+		return nil
+	}
+}
+
 // WithPipelineEndpoint will validate that the provided endpoint
 // has a valid schema and that the hostname can be resolved
 func WithPipelineEndpoint(endpoint string) PipeOption {
@@ -81,11 +93,11 @@ func WithPipelineEndpoint(endpoint string) PipeOption {
 		case "http", "https":
 			// expected schemas for the endpoint
 		default:
-			return errors.New("unknown scheme provided; must be http(s)")
+			return fmt.Errorf("unknown scheme provided; must be http(s): %w", ErrInvalidParam)
 		}
 
-		if _, err := net.LookupHost(u.Host); err != nil {
-			return err
+		if _, err := net.LookupHost(u.Hostname()); err != nil {
+			return multierr.Append(err, ErrInvalidParam)
 		}
 
 		p.Endpoint = u.String()
@@ -96,6 +108,10 @@ func WithPipelineEndpoint(endpoint string) PipeOption {
 
 func WithPipelineHeaders(headers map[string]string) PipeOption {
 	return func(p *Pipeline) error {
+		if headers == nil {
+			return fmt.Errorf("header is nil: %w", ErrNilParamProvided)
+		}
+
 		if p.Headers == nil {
 			p.Headers = make(map[string]string)
 		}
@@ -114,7 +130,7 @@ func WithPipelineHeaders(headers map[string]string) PipeOption {
 func WithPipelineExporter(named string) PipeOption {
 	return func(p *Pipeline) error {
 		if named == "" {
-			return fmt.Errorf("no exporter named: %w", ErrNilParamProvided)
+			return fmt.Errorf("no exporter named: %w", ErrInvalidParam)
 		}
 		p.Exporter = named
 		return nil
@@ -126,7 +142,7 @@ func WithPipelinePropagators(use ...string) PipeOption {
 		if len(use) == 0 {
 			return fmt.Errorf("no pipeline propagators defined: %w", ErrNilParamProvided)
 		}
-		p.Propergators = append(p.Propergators, use...)
+		p.Propagators = use
 		return nil
 	}
 }

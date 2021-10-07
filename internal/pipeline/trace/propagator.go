@@ -10,13 +10,14 @@ import (
 	"github.com/MovieStoreGuy/otel-go-starter/config"
 )
 
-func NewPropagator(use []string) (propagation.TextMapPropagator, error) {
+func NewPropagators(use []string) (propagation.TextMapPropagator, error) {
 	propergatorMap := map[string]propagation.TextMapPropagator{
 		"b3":           b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader)),
 		"baggage":      propagation.Baggage{},
 		"tracecontext": propagation.TraceContext{},
 		"ottrace":      ot.OT{},
 	}
+
 	var props []propagation.TextMapPropagator
 	for _, key := range use {
 		if prop, exist := propergatorMap[key]; exist {

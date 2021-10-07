@@ -12,6 +12,8 @@ import (
 	"github.com/MovieStoreGuy/otel-go-starter/internal/pipeline/trace"
 )
 
+// Launcher stores all the information used from configuring the global
+// Open Telemetry properties and allows for graceful shutdowns
 type Launcher interface {
 	Shutdown()
 }
@@ -30,14 +32,10 @@ func Start(ctx context.Context, opts ...config.OptionFunc) Launcher {
 	}
 
 	l := &launch{
-		conf: &c,
+		conf: c,
 	}
 
 	otel.SetErrorHandler(c.GetErrorHandler())
-
-	if c.Metrics.Enable {
-		_ = 0
-	}
 
 	if c.Tracing.Enable {
 		exporter, err := trace.NewExporterFactory().NewExporter(ctx, &c.Tracing)
@@ -66,7 +64,7 @@ func Start(ctx context.Context, opts ...config.OptionFunc) Launcher {
 			return tp.Shutdown(ctx)
 		})
 
-		prop, err := trace.NewPropagator(c.Tracing.Propergators)
+		prop, err := trace.NewPropagators(c.Tracing.Propagators)
 
 		if err != nil {
 			panic(err)
