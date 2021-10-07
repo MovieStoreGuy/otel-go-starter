@@ -42,27 +42,22 @@ func Start(ctx context.Context, opts ...config.OptionFunc) Launcher {
 		if err != nil {
 			panic(err)
 		}
-		l.shutdownCallbacks = append(l.shutdownCallbacks, func() error {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-			defer cancel()
+		l.shutdownCallbacks = append(l.shutdownCallbacks, gracefulShutdown(exporter.Shutdown))
 
-			return exporter.Shutdown(ctx)
-		})
+		var sampler sdktrace.Sampler = sdktrace.NeverSample()
+		if c.Tracing.Sample {
+			sampler = sdktrace.AlwaysSample()
+		}
 
 		tp := sdktrace.NewTracerProvider(
-			// TODO(Sean Marciniak): Add in a means of sampling here
+			sdktrace.WithSampler(sampler),
 			sdktrace.WithSpanProcessor(
 				sdktrace.NewBatchSpanProcessor(exporter),
 			),
 			sdktrace.WithResource(c.GetResource()),
 		)
 
-		l.shutdownCallbacks = append(l.shutdownCallbacks, func() error {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-			defer cancel()
-
-			return tp.Shutdown(ctx)
-		})
+		l.shutdownCallbacks = append(l.shutdownCallbacks, gracefulShutdown(tp.Shutdown))
 
 		prop, err := trace.NewPropagators(c.Tracing.Propagators)
 
@@ -84,5 +79,14 @@ func (l *launch) Shutdown() {
 	}
 	if err != nil {
 		otel.Handle(err)
+	}
+}
+
+func gracefulShutdown(f func(ctx context.Context) error) func() error {
+	return func() error {
+		ctx, done := context.WithTimeout(context.Background(), time.Second)
+		defer done()
+
+		return f(ctx)
 	}
 }

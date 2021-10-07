@@ -25,6 +25,7 @@ type Pipeline struct {
 	Enable         bool
 	AllowInsecure  bool
 	UseCompression bool
+	Sample         bool
 	Exporter       string
 	Endpoint       string
 	Headers        map[string]string

@@ -21,7 +21,8 @@ func TestBuildingExporters(t *testing.T) {
 	require.NotNil(t, factory, "Must have a valid exporter factory")
 
 	s := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		io.Copy(rw, r.Body)
+		_, err := io.Copy(rw, r.Body)
+		assert.NoError(t, err, "Must not error when copying data")
 	}))
 	t.Cleanup(s.Close)
 

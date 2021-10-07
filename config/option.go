@@ -81,6 +81,13 @@ func WithPipelineCompression() PipeOption {
 	}
 }
 
+func WithPipelineSampled() PipeOption {
+	return func(p *Pipeline) error {
+		p.Sample = true
+		return nil
+	}
+}
+
 // WithPipelineEndpoint will validate that the provided endpoint
 // has a valid schema and that the hostname can be resolved
 func WithPipelineEndpoint(endpoint string) PipeOption {
