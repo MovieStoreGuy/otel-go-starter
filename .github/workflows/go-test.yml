@@ -2,9 +2,10 @@
 name: go test
 on:
   push:
-  - v*
-  branches:
-  - main
+    tags:
+    - v*
+    branches:
+    - main
   pull_request:
 jobs:
   gotest:
