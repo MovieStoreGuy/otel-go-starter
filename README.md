@@ -1,6 +1,7 @@
 # Otel GO Starter
 _A simple means of getting the Open Telemetry global instrumentation configure and started_
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/MovieStoreGuy/otel-go-starter.svg)](https://pkg.go.dev/github.com/MovieStoreGuy/otel-go-starter)
 
 ## Get Started
 
