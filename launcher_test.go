@@ -1,4 +1,4 @@
-package launcher_test
+package otelstarter_test
 
 import (
 	"context"
