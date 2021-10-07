@@ -1,0 +1,17 @@
+---
+name: go test
+on:
+  push:
+  - v*
+  branches:
+  - main
+  pull_request:
+jobs:
+  gotest:
+    name: Test
+    runs-on: ubuntu-16.04
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions/setup-go@v2
+    - run: go test --cover --race -v ./...
+      
