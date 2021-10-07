@@ -10,7 +10,7 @@ on:
 jobs:
   gotest:
     name: Test
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
     - uses: actions/setup-go@v2
