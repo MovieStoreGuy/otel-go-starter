@@ -77,7 +77,7 @@ func Start(ctx context.Context, opts ...config.OptionFunc) Launcher {
 		}
 		l.shutdownCallbacks = append(l.shutdownCallbacks, gracefulShutdown(exporter.Shutdown))
 
-		var sampler sdktrace.Sampler = sdktrace.NeverSample()
+		var sampler sdktrace.Sampler = nil
 		if c.Tracing.Sample {
 			sampler = sdktrace.AlwaysSample()
 		}

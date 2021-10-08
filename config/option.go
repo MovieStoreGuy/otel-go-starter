@@ -8,8 +8,20 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/sdk/resource"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.uber.org/multierr"
 )
+
+func WithServiceName(name string) OptionFunc {
+	return func(c *Config) error {
+		r, err := resource.Merge(c.GetResource(), resource.NewSchemaless(semconv.ServiceNameKey.String(name)))
+		if err != nil {
+			return err
+		}
+		c.resource = r
+		return nil
+	}
+}
 
 func WithResource(ctx context.Context, detector resource.Detector) OptionFunc {
 	return func(c *Config) error {
