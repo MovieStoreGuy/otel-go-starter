@@ -43,6 +43,8 @@ func main() {
 		Handler: r,
 	}
 
+	fmt.Println("Starting echo server")
+
 	// Running the http server in a background
 	go func() {
 		if err := s.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
