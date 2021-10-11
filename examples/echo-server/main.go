@@ -26,8 +26,9 @@ func main() {
 
 	defer launcher.Start(ctx,
 		config.WithTracesPipeline(
-			config.WithPipelineEnabled(),
-			config.WithPipelineExporter("stdout"),
+			config.WithTracingExporterOptions(
+				config.WithExporterNamed("stdout"),
+			),
 		),
 	).Shutdown()
 

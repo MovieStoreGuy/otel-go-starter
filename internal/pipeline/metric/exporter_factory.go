@@ -18,22 +18,22 @@ var ErrNotDefinedExporter = errors.New("invalid exporter provided")
 
 type Factory map[string]generatorFunc
 
-type generatorFunc func(ctx context.Context, pipe *config.Pipeline) (sdkmetric.Exporter, error)
+type generatorFunc func(ctx context.Context, pipe *config.Export) (sdkmetric.Exporter, error)
 
-func (ef Factory) NewExporter(ctx context.Context, pipe *config.Pipeline) (sdkmetric.Exporter, error) {
-	factory, exist := ef[pipe.Exporter]
+func (ef Factory) NewExporter(ctx context.Context, pipe *config.Export) (sdkmetric.Exporter, error) {
+	factory, exist := ef[pipe.Named]
 	if !exist {
-		return nil, fmt.Errorf("unknown exporter %s: %w", pipe.Exporter, ErrNotDefinedExporter)
+		return nil, fmt.Errorf("unknown exporter %s: %w", pipe.Named, ErrNotDefinedExporter)
 	}
 	return factory(ctx, pipe)
 }
 
 func NewExporterFactory() Factory {
 	return map[string]generatorFunc{
-		"stdout": func(ctx context.Context, pipe *config.Pipeline) (sdkmetric.Exporter, error) {
+		"stdout": func(ctx context.Context, pipe *config.Export) (sdkmetric.Exporter, error) {
 			return stdoutmetric.New(stdoutmetric.WithPrettyPrint())
 		},
-		"otlpgrpc": func(ctx context.Context, pipe *config.Pipeline) (sdkmetric.Exporter, error) {
+		"otlpgrpc": func(ctx context.Context, pipe *config.Export) (sdkmetric.Exporter, error) {
 			var grpcOpts []otlpmetricgrpc.Option
 
 			if endpoint := pipe.Endpoint; endpoint != "" {
@@ -51,7 +51,7 @@ func NewExporterFactory() Factory {
 
 			return otlpmetricgrpc.New(ctx, grpcOpts...)
 		},
-		"otlphttp": func(ctx context.Context, pipe *config.Pipeline) (sdkmetric.Exporter, error) {
+		"otlphttp": func(ctx context.Context, pipe *config.Export) (sdkmetric.Exporter, error) {
 			var httpOpts []otlpmetrichttp.Option
 
 			if endpoint := pipe.Endpoint; endpoint != "" {

@@ -39,39 +39,43 @@ func TestApplyingConfig(t *testing.T) {
 	assert.NoError(t, conf.Apply(
 		config.WithResource(context.Background(), TestDetector{t}),
 		config.WithMetricsPipeline(
-			config.WithPipelineEnabled(),
-			config.WithPipelineInsecureConnection(),
-			config.WithPipelineCompression(),
-			config.WithPipelineEndpoint("http://localhost:9094"),
-			config.WithPipelineExporter("otlpgrpc"),
+			config.WithMetricsExporterOptions(
+				config.WithExporterInsecureConnection(),
+				config.WithExporterUseCompression(),
+				config.WithExporterEndpoint("http://localhost:9094"),
+				config.WithExporterNamed("otlpgrpc"),
+			),
 		),
 		config.WithTracesPipeline(
-			config.WithPipelineEnabled(),
-			config.WithPipelineInsecureConnection(),
-			config.WithPipelineCompression(),
-			config.WithPipelineEndpoint("http://localhost:9094"),
-			config.WithPipelineExporter("otlpgrpc"),
-			config.WithPipelineHeaders(map[string]string{
-				"Service-Domain": "pineapples",
-			}),
-			config.WithPipelinePropagators(
+			config.WithTracingExporterOptions(
+				config.WithExporterInsecureConnection(),
+				config.WithExporterUseCompression(),
+				config.WithExporterEndpoint("http://localhost:9094"),
+				config.WithExporterNamed("otlpgrpc"),
+				config.WithExporterHeaders(map[string]string{
+					"Service-Domain": "pineapples",
+				}),
+			),
+			config.WithTracingPropagators(
 				"b3",
 				"ot",
 			),
+			config.WithTracingSampled(),
 		),
 	), "Must not error when applying valid configuration")
 
 	assert.True(t, conf.Metrics.Enable)
-	assert.True(t, conf.Metrics.AllowInsecure)
-	assert.True(t, conf.Metrics.UseCompression)
-	assert.Equal(t, "http://localhost:9094", conf.Metrics.Endpoint)
-	assert.Equal(t, "otlpgrpc", conf.Metrics.Exporter)
+	assert.True(t, conf.Metrics.Export.AllowInsecure)
+	assert.True(t, conf.Metrics.Export.UseCompression)
+	assert.Equal(t, "http://localhost:9094", conf.Metrics.Export.Endpoint)
+	assert.Equal(t, "otlpgrpc", conf.Metrics.Export.Named)
 
 	assert.True(t, conf.Tracing.Enable)
-	assert.True(t, conf.Tracing.AllowInsecure)
-	assert.True(t, conf.Tracing.UseCompression)
-	assert.Equal(t, "http://localhost:9094", conf.Tracing.Endpoint)
-	assert.Equal(t, "otlpgrpc", conf.Tracing.Exporter)
-	assert.Equal(t, map[string]string{"Service-Domain": "pineapples"}, conf.Tracing.Headers)
+	assert.True(t, conf.Tracing.Export.AllowInsecure)
+	assert.True(t, conf.Tracing.Export.UseCompression)
+	assert.True(t, conf.Tracing.Sample)
+	assert.Equal(t, "http://localhost:9094", conf.Tracing.Export.Endpoint)
+	assert.Equal(t, "otlpgrpc", conf.Tracing.Export.Named)
+	assert.Equal(t, map[string]string{"Service-Domain": "pineapples"}, conf.Tracing.Export.Headers)
 	assert.Equal(t, []string{"b3", "ot"}, conf.Tracing.Propagators)
 }
