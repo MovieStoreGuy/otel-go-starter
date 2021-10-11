@@ -26,15 +26,15 @@ func TestConfiguringExporters(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		conf     *config.Pipeline
+		conf     *config.Export
 	}{
-		{scenario: "Stdout Exporter", conf: &config.Pipeline{Exporter: "stdout"}},
-		{scenario: "Basic grpc otlp exporter", conf: &config.Pipeline{Exporter: "otlpgrpc", Endpoint: s.URL}},
-		{scenario: "Basic http otlp exporter", conf: &config.Pipeline{Exporter: "otlphttp", Endpoint: s.URL}},
+		{scenario: "Stdout Exporter", conf: &config.Export{Named: "stdout"}},
+		{scenario: "Basic grpc otlp exporter", conf: &config.Export{Named: "otlpgrpc", Endpoint: s.URL}},
+		{scenario: "Basic http otlp exporter", conf: &config.Export{Named: "otlphttp", Endpoint: s.URL}},
 		{
 			scenario: "Configured grpc otlp exporter",
-			conf: &config.Pipeline{
-				Exporter: "otlpgrpc",
+			conf: &config.Export{
+				Named:    "otlpgrpc",
 				Endpoint: s.URL,
 				Headers: map[string]string{
 					"Service-Domain": "icecream",
@@ -45,8 +45,8 @@ func TestConfiguringExporters(t *testing.T) {
 		},
 		{
 			scenario: "Configured http otlp exporter",
-			conf: &config.Pipeline{
-				Exporter: "otlphttp",
+			conf: &config.Export{
+				Named:    "otlphttp",
 				Endpoint: s.URL,
 				Headers: map[string]string{
 					"Service-Domain": "icecream",
@@ -72,6 +72,6 @@ func TestConfiguringExporters(t *testing.T) {
 		})
 	}
 
-	_, err := metric.NewExporterFactory().NewExporter(ctx, &config.Pipeline{Exporter: "undefined-exporter"})
+	_, err := metric.NewExporterFactory().NewExporter(ctx, &config.Export{Named: "undefined-exporter"})
 	assert.ErrorIs(t, err, metric.ErrNotDefinedExporter)
 }

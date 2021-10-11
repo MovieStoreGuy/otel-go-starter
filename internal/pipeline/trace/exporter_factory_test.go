@@ -31,17 +31,17 @@ func TestBuildingExporters(t *testing.T) {
 
 	testCases := []struct {
 		name string
-		conf *config.Pipeline
+		conf *config.Export
 	}{
-		{name: "stdout exporter", conf: &config.Pipeline{Exporter: "stdout"}},
-		{name: "jaeger exporter", conf: &config.Pipeline{Exporter: "jaeger", Endpoint: s.URL}},
-		{name: "zipkin exporter", conf: &config.Pipeline{Exporter: "zipkin", Endpoint: s.URL}},
-		{name: "otel http exporter", conf: &config.Pipeline{Exporter: "otlphttp", Endpoint: s.URL}},
-		{name: "otel grpc exporter", conf: &config.Pipeline{Exporter: "otlpgrpc", Endpoint: s.URL}},
+		{name: "stdout exporter", conf: &config.Export{Named: "stdout"}},
+		{name: "jaeger exporter", conf: &config.Export{Named: "jaeger", Endpoint: s.URL}},
+		{name: "zipkin exporter", conf: &config.Export{Named: "zipkin", Endpoint: s.URL}},
+		{name: "otel http exporter", conf: &config.Export{Named: "otlphttp", Endpoint: s.URL}},
+		{name: "otel grpc exporter", conf: &config.Export{Named: "otlpgrpc", Endpoint: s.URL}},
 		{
 			name: "otel http exporter with all options",
-			conf: &config.Pipeline{
-				Exporter: "otlphttp",
+			conf: &config.Export{
+				Named:    "otlphttp",
 				Endpoint: s.URL,
 				Headers: map[string]string{
 					"Service-Domain": "icecream",
@@ -52,8 +52,8 @@ func TestBuildingExporters(t *testing.T) {
 		},
 		{
 			name: "otel grpc exporter with all options",
-			conf: &config.Pipeline{
-				Exporter: "otlpgrpc",
+			conf: &config.Export{
+				Named:    "otlpgrpc",
 				Endpoint: s.URL,
 				Headers: map[string]string{
 					"Service-Domain": "icecream",
@@ -76,6 +76,6 @@ func TestBuildingExporters(t *testing.T) {
 			done()
 		})
 	}
-	_, err := factory.NewExporter(context.Background(), &config.NewDefault().Tracing)
+	_, err := factory.NewExporter(context.Background(), &config.Export{})
 	assert.ErrorIs(t, err, trace.ErrNotDefinedExporter, "Must error when invalid exporter name is provided")
 }

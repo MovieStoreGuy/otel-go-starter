@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"time"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -14,39 +15,68 @@ var (
 )
 
 type Config struct {
-	Metrics Pipeline
-	Tracing Pipeline
+	Metrics Metrics
+	Tracing Tracing
 
 	errHandler otel.ErrorHandler
 	resource   *resource.Resource
 }
 
-type Pipeline struct {
-	Enable         bool
+type Export struct {
 	AllowInsecure  bool
 	UseCompression bool
-	Sample         bool
-	Exporter       string
+	Named          string
 	Endpoint       string
 	Headers        map[string]string
-	Propagators    []string
 }
 
-type OptionFunc func(*Config) error
+type Tracing struct {
+	Enable bool
 
-type PipeOption func(*Pipeline) error
+	Export Export
+
+	Sample      bool
+	Propagators []string
+}
+
+type Metrics struct {
+	Enable bool
+
+	Export Export
+
+	CollectPeriod time.Duration
+}
+
+// Method types to programatically validate additions
+// to the existing config
+type (
+	OptionFunc    func(*Config) error
+	ExportOption  func(*Export) error
+	TracingOption func(*Tracing) error
+	MetricsOption func(*Metrics) error
+)
 
 func NewDefault() *Config {
 	return &Config{
-		Metrics: Pipeline{
+		Metrics: Metrics{
 			Enable: false,
+			Export: Export{
+				Named:   "otlpgrpc",
+				Headers: map[string]string{},
+			},
+			CollectPeriod: time.Second,
 		},
-		Tracing: Pipeline{
+		Tracing: Tracing{
 			Enable: false,
+			Export: Export{
+				Named:   "otlpgrpc",
+				Headers: map[string]string{},
+			},
 			Propagators: []string{
 				"baggage",
 				"tracecontext",
 			},
+			Sample: false,
 		},
 		errHandler: otel.GetErrorHandler(),
 		resource:   resource.Default(),

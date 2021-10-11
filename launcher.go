@@ -24,7 +24,6 @@ type Launcher interface {
 }
 
 type launch struct {
-	conf              *config.Config
 	shutdownCallbacks []func() error
 }
 
@@ -37,14 +36,12 @@ func Start(ctx context.Context, opts ...config.OptionFunc) Launcher {
 		panic(err)
 	}
 
-	l := &launch{
-		conf: c,
-	}
+	l := &launch{}
 
 	otel.SetErrorHandler(c.GetErrorHandler())
 
 	if c.Metrics.Enable {
-		exporter, err := metric.NewExporterFactory().NewExporter(ctx, &c.Metrics)
+		exporter, err := metric.NewExporterFactory().NewExporter(ctx, &c.Metrics.Export)
 		if err != nil {
 			panic(err)
 		}
@@ -71,7 +68,7 @@ func Start(ctx context.Context, opts ...config.OptionFunc) Launcher {
 	}
 
 	if c.Tracing.Enable {
-		exporter, err := trace.NewExporterFactory().NewExporter(ctx, &c.Tracing)
+		exporter, err := trace.NewExporterFactory().NewExporter(ctx, &c.Tracing.Export)
 		if err != nil {
 			panic(err)
 		}

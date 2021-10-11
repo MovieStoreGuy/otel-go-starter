@@ -22,19 +22,19 @@ var (
 
 type ExporterFactory map[string]generatorFunc
 
-type generatorFunc func(ctx context.Context, conf *config.Pipeline) (sdktrace.SpanExporter, error)
+type generatorFunc func(ctx context.Context, conf *config.Export) (sdktrace.SpanExporter, error)
 
-func (ef ExporterFactory) NewExporter(ctx context.Context, conf *config.Pipeline) (sdktrace.SpanExporter, error) {
-	factory, exist := (ef)[conf.Exporter]
+func (ef ExporterFactory) NewExporter(ctx context.Context, conf *config.Export) (sdktrace.SpanExporter, error) {
+	factory, exist := (ef)[conf.Named]
 	if !exist {
-		return nil, fmt.Errorf("unknown exporter %s: %w", conf.Exporter, ErrNotDefinedExporter)
+		return nil, fmt.Errorf("unknown exporter %s: %w", conf.Named, ErrNotDefinedExporter)
 	}
 	return factory(ctx, conf)
 }
 
 func NewExporterFactory() ExporterFactory {
 	return map[string]generatorFunc{
-		"otlpgrpc": func(ctx context.Context, conf *config.Pipeline) (sdktrace.SpanExporter, error) {
+		"otlpgrpc": func(ctx context.Context, conf *config.Export) (sdktrace.SpanExporter, error) {
 			var grpcOpts []otlptracegrpc.Option
 
 			if endpoint := conf.Endpoint; endpoint != "" {
@@ -52,7 +52,7 @@ func NewExporterFactory() ExporterFactory {
 
 			return otlptracegrpc.New(ctx, grpcOpts...)
 		},
-		"otlphttp": func(ctx context.Context, conf *config.Pipeline) (sdktrace.SpanExporter, error) {
+		"otlphttp": func(ctx context.Context, conf *config.Export) (sdktrace.SpanExporter, error) {
 			var httpOpts []otlptracehttp.Option
 
 			if endpoint := conf.Endpoint; endpoint != "" {
@@ -70,15 +70,15 @@ func NewExporterFactory() ExporterFactory {
 
 			return otlptracehttp.New(ctx, httpOpts...)
 		},
-		"zipkin": func(ctx context.Context, conf *config.Pipeline) (sdktrace.SpanExporter, error) {
+		"zipkin": func(ctx context.Context, conf *config.Export) (sdktrace.SpanExporter, error) {
 			return zipkin.New(conf.Endpoint)
 		},
-		"jaeger": func(ctx context.Context, conf *config.Pipeline) (sdktrace.SpanExporter, error) {
+		"jaeger": func(ctx context.Context, conf *config.Export) (sdktrace.SpanExporter, error) {
 			return jaeger.New(jaeger.WithCollectorEndpoint(
 				jaeger.WithEndpoint(conf.Endpoint),
 			))
 		},
-		"stdout": func(_ context.Context, _ *config.Pipeline) (sdktrace.SpanExporter, error) {
+		"stdout": func(_ context.Context, _ *config.Export) (sdktrace.SpanExporter, error) {
 			return stdouttrace.New(stdouttrace.WithPrettyPrint())
 		},
 	}

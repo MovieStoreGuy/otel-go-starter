@@ -3,6 +3,7 @@ package otelstarter_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"go.opentelemetry.io/otel"
@@ -30,7 +31,7 @@ func TestLauncherUsingDefault(t *testing.T) {
 	launcher.Start(ctx).Shutdown()
 }
 
-func TestLauncherWithConfiguredTracePipeline(t *testing.T) {
+func TestLauncherWithConfiguredPipelines(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -38,8 +39,15 @@ func TestLauncherWithConfiguredTracePipeline(t *testing.T) {
 		launcher.Start(ctx,
 			config.WithOtelErrorHandler(&OtelTestHandler{t}),
 			config.WithTracesPipeline(
-				config.WithPipelineEnabled(),
-				config.WithPipelineExporter("stdout"),
+				config.WithTracingExporterOptions(
+					config.WithExporterNamed("stdout"),
+				),
+			),
+			config.WithMetricsPipeline(
+				config.WithMetricsCollectionPeriod(time.Minute),
+				config.WithMetricsExporterOptions(
+					config.WithExporterNamed("stdout"),
+				),
 			),
 		).Shutdown()
 	})
@@ -55,16 +63,18 @@ func TestLauncherPanicsWithInvalidTracingConfig(t *testing.T) {
 
 	assert.Panics(t, func() {
 		launcher.Start(ctx, config.WithTracesPipeline(
-			config.WithPipelineEnabled(),
-			config.WithPipelineExporter("unsupported-exporter"),
+			config.WithTracingExporterOptions(
+				config.WithExporterNamed("unsupported-exporter"),
+			),
 		))
 	})
 
 	assert.Panics(t, func() {
 		launcher.Start(ctx, config.WithTracesPipeline(
-			config.WithPipelineEnabled(),
-			config.WithPipelineExporter("stdout"),
-			config.WithPipelinePropagators("excellent-propagator"),
+			config.WithTracingExporterOptions(
+				config.WithExporterNamed("stdout"),
+			),
+			config.WithTracingPropagators("excellent-propagator"),
 		))
 	})
 }

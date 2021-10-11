@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"time"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -48,8 +49,9 @@ func WithOtelErrorHandler(handler otel.ErrorHandler) OptionFunc {
 	}
 }
 
-func WithMetricsPipeline(pipeOpts ...PipeOption) OptionFunc {
+func WithMetricsPipeline(pipeOpts ...MetricsOption) OptionFunc {
 	return func(c *Config) (err error) {
+		c.Metrics.Enable = true
 		for _, opt := range pipeOpts {
 			if opt == nil {
 				return fmt.Errorf("nil metric pipeline option provided: %w", ErrNilParamProvided)
@@ -60,8 +62,9 @@ func WithMetricsPipeline(pipeOpts ...PipeOption) OptionFunc {
 	}
 }
 
-func WithTracesPipeline(pipeOpts ...PipeOption) OptionFunc {
+func WithTracesPipeline(pipeOpts ...TracingOption) OptionFunc {
 	return func(c *Config) (err error) {
+		c.Tracing.Enable = true
 		for _, opt := range pipeOpts {
 			if opt == nil {
 				return fmt.Errorf("nil traces pipeline option provided: %w", ErrNilParamProvided)
@@ -72,38 +75,48 @@ func WithTracesPipeline(pipeOpts ...PipeOption) OptionFunc {
 	}
 }
 
-func WithPipelineEnabled() PipeOption {
-	return func(p *Pipeline) error {
-		p.Enable = true
-		return nil
+func WithTracingExporterOptions(opts ...ExportOption) TracingOption {
+	return func(t *Tracing) (err error) {
+		for _, opt := range opts {
+			if opt == nil {
+				return fmt.Errorf("nil trace exporter option provided: %w", ErrNilParamProvided)
+			}
+			err = multierr.Append(err, opt(&t.Export))
+		}
+		return err
 	}
 }
 
-func WithPipelineInsecureConnection() PipeOption {
-	return func(p *Pipeline) error {
+func WithMetricsExporterOptions(opts ...ExportOption) MetricsOption {
+	return func(m *Metrics) (err error) {
+		for _, opt := range opts {
+			if opt == nil {
+				return fmt.Errorf("nil trace exporter option provided: %w", ErrNilParamProvided)
+			}
+			err = multierr.Append(err, opt(&m.Export))
+		}
+		return err
+	}
+}
+
+func WithExporterInsecureConnection() ExportOption {
+	return func(p *Export) error {
 		p.AllowInsecure = true
 		return nil
 	}
 }
 
-func WithPipelineCompression() PipeOption {
-	return func(p *Pipeline) error {
+func WithExporterUseCompression() ExportOption {
+	return func(p *Export) error {
 		p.UseCompression = true
-		return nil
-	}
-}
-
-func WithPipelineSampled() PipeOption {
-	return func(p *Pipeline) error {
-		p.Sample = true
 		return nil
 	}
 }
 
 // WithPipelineEndpoint will validate that the provided endpoint
 // has a valid schema and that the hostname can be resolved
-func WithPipelineEndpoint(endpoint string) PipeOption {
-	return func(p *Pipeline) error {
+func WithExporterEndpoint(endpoint string) ExportOption {
+	return func(p *Export) error {
 		u, err := url.Parse(endpoint)
 		if err != nil {
 			return err
@@ -125,8 +138,8 @@ func WithPipelineEndpoint(endpoint string) PipeOption {
 	}
 }
 
-func WithPipelineHeaders(headers map[string]string) PipeOption {
-	return func(p *Pipeline) error {
+func WithExporterHeaders(headers map[string]string) ExportOption {
+	return func(p *Export) error {
 		if headers == nil {
 			return fmt.Errorf("header is nil: %w", ErrNilParamProvided)
 		}
@@ -146,22 +159,39 @@ func WithPipelineHeaders(headers map[string]string) PipeOption {
 	}
 }
 
-func WithPipelineExporter(named string) PipeOption {
-	return func(p *Pipeline) error {
+func WithExporterNamed(named string) ExportOption {
+	return func(p *Export) error {
 		if named == "" {
 			return fmt.Errorf("no exporter named: %w", ErrInvalidParam)
 		}
-		p.Exporter = named
+		p.Named = named
 		return nil
 	}
 }
 
-func WithPipelinePropagators(use ...string) PipeOption {
-	return func(p *Pipeline) error {
+func WithTracingPropagators(use ...string) TracingOption {
+	return func(p *Tracing) error {
 		if len(use) == 0 {
 			return fmt.Errorf("no pipeline propagators defined: %w", ErrNilParamProvided)
 		}
 		p.Propagators = use
+		return nil
+	}
+}
+
+func WithTracingSampled() TracingOption {
+	return func(t *Tracing) error {
+		t.Sample = true
+		return nil
+	}
+}
+
+func WithMetricsCollectionPeriod(t time.Duration) MetricsOption {
+	return func(m *Metrics) error {
+		if t < 0 {
+			return fmt.Errorf("collection period must be positive value: %w", ErrInvalidParam)
+		}
+		m.CollectPeriod = t
 		return nil
 	}
 }

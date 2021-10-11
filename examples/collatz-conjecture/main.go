@@ -153,9 +153,11 @@ func main() {
 	defer otelstarter.Start(ctx,
 		config.WithServiceName("collatz-conjecture"),
 		config.WithTracesPipeline(
-			config.WithPipelineEnabled(),
-			config.WithPipelineExporter("zipkin"),
-			config.WithPipelineEndpoint("http://localhost:9411/api/v2/spans"),
+			config.WithTracingExporterOptions(
+				config.WithExporterNamed("zipkin"),
+				config.WithExporterEndpoint("http://localhost:9411/api/v2/spans"),
+			),
+			config.WithTracingSampled(),
 		),
 	).Shutdown()
 
@@ -163,21 +165,28 @@ func main() {
 
 	var wg sync.WaitGroup
 	jobs := make(chan int, maxValue)
+
 	for i := 0; i < workers; i++ {
 		wg.Add(1)
-		go func() {
+		go func(workerID int) {
 			defer wg.Done()
+			ctx, span := otel.GetTracerProvider().Tracer("worker").Start(ctx, "compute.conjecture",
+				trace.WithAttributes(attribute.Int("worker.id", workerID)),
+			)
+			defer span.End()
+
 			for job := range jobs {
 				con.ComputeRecursive(ctx, job)
 				con.ComputeMemoized(ctx, job)
 				con.ComputeIterative(ctx, job)
 			}
-		}()
+		}(i)
 	}
 
 	for n := 1; n < maxValue; n++ {
 		jobs <- n
 	}
+
 	close(jobs)
 	wg.Wait()
 

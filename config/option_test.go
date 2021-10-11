@@ -23,8 +23,12 @@ func TestNilParamConfigOptions(t *testing.T) {
 		{method: "WithOtelErrorHandler", opt: config.WithOtelErrorHandler(nil)},
 		{method: "WithMetricsPipeline", opt: config.WithMetricsPipeline(nil)},
 		{method: "WithTracesPipeline", opt: config.WithTracesPipeline(nil)},
-		{method: "WithPipelineHeaders", opt: config.WithMetricsPipeline(config.WithPipelineHeaders(nil))},
-		{method: "WithPipelinePropagators", opt: config.WithMetricsPipeline(config.WithPipelinePropagators())},
+		{method: "WithPipelineHeaders", opt: config.WithMetricsPipeline(
+			config.WithMetricsExporterOptions(config.WithExporterHeaders(nil)),
+		)},
+		{method: "WithPipelinePropagators", opt: config.WithTracesPipeline(
+			config.WithTracingPropagators(),
+		)},
 	}
 
 	for _, tc := range testCases {
@@ -41,13 +45,19 @@ func TestInvalidConfigOptions(t *testing.T) {
 		method string
 		opt    config.OptionFunc
 	}{
-		{method: "WithPipelineEndpoint.InvalidScheme", opt: config.WithMetricsPipeline(config.WithPipelineEndpoint("wss://localhost"))},
-		{method: "WithPipelineEndpoint.InvalidHost", opt: config.WithMetricsPipeline(config.WithPipelineEndpoint("http://pineapples.pizza"))},
-		{method: "WithPipelineHeaders.DuplicateEntries", opt: config.WithTracesPipeline(
-			config.WithPipelineHeaders(map[string]string{"Otel-Service": "foo"}),
-			config.WithPipelineHeaders(map[string]string{"Otel-Service": "bar"}),
+		{method: "WithPipelineEndpoint.InvalidScheme", opt: config.WithMetricsPipeline(
+			config.WithMetricsExporterOptions(config.WithExporterEndpoint("wss://localhost")),
 		)},
-		{method: "WithPipelineExporter", opt: config.WithMetricsPipeline(config.WithPipelineExporter(""))},
+		{method: "WithPipelineEndpoint.InvalidHost", opt: config.WithTracesPipeline(
+			config.WithTracingExporterOptions(config.WithExporterEndpoint("http://pineapples.pizza")),
+		)},
+		{method: "WithPipelineHeaders.DuplicateEntries", opt: config.WithTracesPipeline(
+			config.WithTracingExporterOptions(
+				config.WithExporterHeaders(map[string]string{"Otel-Service": "foo"}),
+				config.WithExporterHeaders(map[string]string{"Otel-Service": "bar"}),
+			),
+		)},
+		{method: "WithPipelineExporter", opt: config.WithMetricsPipeline(config.WithMetricsExporterOptions(config.WithExporterNamed("")))},
 	}
 
 	for _, tc := range testCases {
