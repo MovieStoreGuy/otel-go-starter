@@ -3,6 +3,7 @@ package otelstarter_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"go.opentelemetry.io/otel"
@@ -30,7 +31,7 @@ func TestLauncherUsingDefault(t *testing.T) {
 	launcher.Start(ctx).Shutdown()
 }
 
-func TestLauncherWithConfiguredTracePipeline(t *testing.T) {
+func TestLauncherWithConfiguredPipelines(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -39,6 +40,12 @@ func TestLauncherWithConfiguredTracePipeline(t *testing.T) {
 			config.WithOtelErrorHandler(&OtelTestHandler{t}),
 			config.WithTracesPipeline(
 				config.WithTracingExporterOptions(
+					config.WithExporterNamed("stdout"),
+				),
+			),
+			config.WithMetricsPipeline(
+				config.WithMetricsCollectionPeriod(time.Minute),
+				config.WithMetricsExporterOptions(
 					config.WithExporterNamed("stdout"),
 				),
 			),
