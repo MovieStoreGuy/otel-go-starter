@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.uber.org/multierr"
@@ -24,7 +25,7 @@ func WithServiceName(name string) OptionFunc {
 	}
 }
 
-func WithResource(ctx context.Context, detector resource.Detector) OptionFunc {
+func WithResourceDetector(ctx context.Context, detector resource.Detector) OptionFunc {
 	return func(c *Config) error {
 		if detector == nil {
 			return fmt.Errorf("resource detector is nil: %w", ErrNilParamProvided)
@@ -39,6 +40,18 @@ func WithResource(ctx context.Context, detector resource.Detector) OptionFunc {
 		return err
 	}
 }
+
+func WithAttributes(attrs ...attribute.KeyValue) OptionFunc {
+	return func(c *Config) error {
+		r, err := resource.Merge(c.GetResource(), resource.NewSchemaless(attrs...))
+		if err != nil {
+			return err
+		}
+		c.resource = r
+		return nil
+	}
+}
+
 func WithOtelErrorHandler(handler otel.ErrorHandler) OptionFunc {
 	return func(c *Config) error {
 		if handler == nil {
