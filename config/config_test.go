@@ -37,7 +37,7 @@ func TestApplyingConfig(t *testing.T) {
 
 	assert.NoError(t, conf.Apply(), "Must not error when applying valid configuration")
 	assert.NoError(t, conf.Apply(
-		config.WithResource(context.Background(), TestDetector{t}),
+		config.WithResourceDetector(context.Background(), TestDetector{t}),
 		config.WithMetricsPipeline(
 			config.WithMetricsExporterOptions(
 				config.WithExporterInsecureConnection(),

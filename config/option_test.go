@@ -19,7 +19,7 @@ func TestNilParamConfigOptions(t *testing.T) {
 		method string
 		opt    config.OptionFunc
 	}{
-		{method: "WithResource", opt: config.WithResource(context.TODO(), nil)},
+		{method: "WithResource", opt: config.WithResourceDetector(context.TODO(), nil)},
 		{method: "WithOtelErrorHandler", opt: config.WithOtelErrorHandler(nil)},
 		{method: "WithMetricsPipeline", opt: config.WithMetricsPipeline(nil)},
 		{method: "WithTracesPipeline", opt: config.WithTracesPipeline(nil)},

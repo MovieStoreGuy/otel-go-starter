@@ -58,7 +58,7 @@ func TestLauncherPanicsWithInvalidTracingConfig(t *testing.T) {
 	defer cancel()
 
 	assert.Panics(t, func() {
-		launcher.Start(ctx, config.WithResource(ctx, nil))
+		launcher.Start(ctx, config.WithResourceDetector(ctx, nil))
 	})
 
 	assert.Panics(t, func() {

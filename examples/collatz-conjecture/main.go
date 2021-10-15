@@ -62,6 +62,7 @@ func (c *Conjecture) ComputeRecursive(ctx context.Context, n int) {
 		span.AddEvent(cancelledEvent,
 			trace.WithTimestamp(time.Now()),
 		)
+		return
 	default:
 		// Allow to passthrough
 	}
