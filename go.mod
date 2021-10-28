@@ -3,9 +3,9 @@ module github.com/MovieStoreGuy/otel-go-starter
 go 1.17
 
 require (
-	go.opentelemetry.io/otel v1.0.1
+	go.opentelemetry.io/otel v1.1.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.0.1
-	go.opentelemetry.io/otel/sdk v1.0.1
+	go.opentelemetry.io/otel/sdk v1.1.0
 	go.uber.org/multierr v1.7.0
 )
 
@@ -17,10 +17,10 @@ require (
 	go.opentelemetry.io/contrib/propagators/b3 v1.0.0
 	go.opentelemetry.io/contrib/propagators/ot v1.0.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.0.1
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.0.1 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.1.0 // indirect
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.0.1
 	go.opentelemetry.io/otel/exporters/zipkin v1.0.1
-	go.opentelemetry.io/otel/trace v1.0.1 // indirect
+	go.opentelemetry.io/otel/trace v1.1.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.9.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
@@ -38,7 +38,7 @@ require (
 	github.com/stretchr/objx v0.2.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.24.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v0.24.0
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.0.1
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.1.0
 	go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v0.24.0
 	go.opentelemetry.io/otel/metric v0.24.0
 	go.opentelemetry.io/otel/sdk/export/metric v0.24.0
